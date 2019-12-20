@@ -1,9 +1,11 @@
 package com.example.projertfinall;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,12 +20,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import static android.content.ContentValues.TAG;
+
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     GoogleMap mGoogleMaps;
     MapView mMapView;
     View mView;
+    private Object ImageView;
 
 
     @Nullable
@@ -49,7 +54,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             mMapView = (MapView) mView.findViewById(R.id.map);
 
         }
-
     }
 
 
@@ -67,6 +71,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(Liberty));
     }
     }
+
 
 
 
