@@ -1,4 +1,4 @@
-package com.example.projertfinall;
+package com.example.projertfinall.Fragments;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.projertfinall.R;
 import com.example.projertfinall.model.Pokemon;
 import com.example.projertfinall.model.PokemonAdapter;
 import com.example.projertfinall.model.PokemonRestApi;
@@ -33,6 +34,8 @@ public class FavoritesFragment extends Fragment {
     View PView;
 
     private static final String TAG="POKEDEX";
+    private int offset;
+    private boolean apc;
     private Retrofit retrofit;
     private RecyclerView recyclerView;
     private PokemonAdapter pokemonAdapter;
@@ -55,30 +58,58 @@ public class FavoritesFragment extends Fragment {
 
 
         recyclerView = (RecyclerView) PView.findViewById(R.id.recyclerView);
-        pokemonAdapter = new PokemonAdapter();
+        pokemonAdapter = new PokemonAdapter(getContext());
         recyclerView.setAdapter(pokemonAdapter);
         recyclerView.setHasFixedSize(true);
-        layoutManager = new GridLayoutManager(getContext(),3,GridLayoutManager.VERTICAL,false);
+        final GridLayoutManager layoutManager = new GridLayoutManager(getContext(),3,GridLayoutManager.VERTICAL,false);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            private void onScrollStated(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy>0) {
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+
+
+                    if(apc) {
+                        if((visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                            Log.i(TAG,"fin");
+
+                            apc = false;
+                            offset +=20;
+                            obtenirDonnees(offset);
+                        }
+                    }
+
+
+                }
+            }
+        });
 
 
         retrofit = new Retrofit.Builder()
                 .baseUrl("https://pokeapi.co/api/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+        apc = true;
+        offset=0;
 
-        obtenirDonnees();
+        obtenirDonnees(offset);
 
         return PView;
     }
 
-    private void obtenirDonnees() {
+    private void obtenirDonnees(int offset) {
         PokemonRestApi pokemonRestApi = retrofit.create(PokemonRestApi.class);
-        final Call<RestPokemonResponse>pokemonResponseCall=pokemonRestApi.getListPokemon();
+        final Call<RestPokemonResponse>pokemonResponseCall=pokemonRestApi.getListPokemon(20,offset);
 
         pokemonResponseCall.enqueue(new Callback<com.example.projertfinall.model.RestPokemonResponse>() {
             @Override
             public void onResponse(Call<com.example.projertfinall.model.RestPokemonResponse> call, Response<com.example.projertfinall.model.RestPokemonResponse> response) {
+
+                apc = true;
                 if (response.isSuccessful()) {
 
                     RestPokemonResponse restPokemonResponse = response.body();
@@ -97,6 +128,7 @@ public class FavoritesFragment extends Fragment {
 
             @Override
             public void onFailure(Call<com.example.projertfinall.model.RestPokemonResponse> call, Throwable t) {
+                apc = true;
                 Log.e(TAG, "onFailure" + t.getMessage());
 
             }

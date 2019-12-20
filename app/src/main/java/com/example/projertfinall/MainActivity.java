@@ -1,17 +1,16 @@
 package com.example.projertfinall;
 
-import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.projertfinall.Fragments.FavoritesFragment;
+import com.example.projertfinall.Fragments.HomeFragment;
+import com.example.projertfinall.Fragments.MapFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
