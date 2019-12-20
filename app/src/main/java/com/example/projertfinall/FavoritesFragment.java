@@ -6,24 +6,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.projertfinall.model.Pokemon;
 import com.example.projertfinall.model.PokemonAdapter;
 import com.example.projertfinall.model.PokemonRestApi;
 import com.example.projertfinall.model.RestPokemonResponse;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-
-
-
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -34,80 +28,83 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FavoritesFragment extends Fragment {
 
+
+
     View PView;
 
+    private static final String TAG="POKEDEX";
+    private Retrofit retrofit;
     private RecyclerView recyclerView;
+    private PokemonAdapter pokemonAdapter;
     public List<RestPokemonResponse> RestPokemonResponse;
     private RecyclerView.LayoutManager layoutManager;
-    private PokemonAdapter adapter;
+
     private RecyclerView.Adapter pAdapter;
     private SharedPreferences sharedPreferences;
 
 
-    public FavoritesFragment() {
-
-    }
-
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
+    public View onCreateView( @Nullable LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         PView=inflater.inflate(R.layout.fragment_favorites,container, false);
-
-
             super.onCreate(savedInstanceState);
-
             recyclerView = PView.findViewById(R.id.my_recycler_view);
-        Gson gson = new GsonBuilder()
-                .setLenient()
-                .create();
 
-        Retrofit retrofit = new Retrofit.Builder()
+
+        recyclerView = (RecyclerView) PView.findViewById(R.id.recyclerView);
+        pokemonAdapter = new PokemonAdapter();
+        recyclerView.setAdapter(pokemonAdapter);
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new GridLayoutManager(getContext(),3,GridLayoutManager.VERTICAL,false);
+        recyclerView.setLayoutManager(layoutManager);
+
+
+        retrofit = new Retrofit.Builder()
                 .baseUrl("https://pokeapi.co/api/v2/")
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        PokemonRestApi pokemonRestApi = retrofit.create(PokemonRestApi.class);
+        obtenirDonnees();
 
-        Call<RestPokemonResponse> call = pokemonRestApi.getListPokemon();
-        call.enqueue(new Callback<RestPokemonResponse>() {
+        return PView;
+    }
+
+    private void obtenirDonnees() {
+        PokemonRestApi pokemonRestApi = retrofit.create(PokemonRestApi.class);
+        final Call<RestPokemonResponse>pokemonResponseCall=pokemonRestApi.getListPokemon();
+
+        pokemonResponseCall.enqueue(new Callback<com.example.projertfinall.model.RestPokemonResponse>() {
             @Override
-            public void onResponse(Call<RestPokemonResponse> call, Response<RestPokemonResponse> response) {
-                RestPokemonResponse restPokemonResponse = response.body();
-                Gson gson = new Gson();
-                List<Pokemon> listPokemon = restPokemonResponse.getResults();
+            public void onResponse(Call<com.example.projertfinall.model.RestPokemonResponse> call, Response<com.example.projertfinall.model.RestPokemonResponse> response) {
+                if (response.isSuccessful()) {
+
+                    RestPokemonResponse restPokemonResponse = response.body();
+                    ArrayList<Pokemon> listPokemon = (ArrayList<Pokemon>) restPokemonResponse.getResults();
+
+                    pokemonAdapter.aditionPokemonAdapter(listPokemon);
+
+
+
+
+            } else {
+                    Log.e(TAG,"onResponse: " + response.errorBody());
+
+                }
             }
 
             @Override
-            public void onFailure(Call<RestPokemonResponse> call, Throwable t) {
-                Log.d("Erreur", "API ERROR");
+            public void onFailure(Call<com.example.projertfinall.model.RestPokemonResponse> call, Throwable t) {
+                Log.e(TAG, "onFailure" + t.getMessage());
 
             }
         });
 
-
-     return PView;
-
     }
 
-
-
-        public void showList(List<RestPokemonResponse> list) {
-
-
-
-        recyclerView.setHasFixedSize(true);
-        // use a linear layout manager
-        layoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(pAdapter);
     }
-}
-
-
-
 
 
 
